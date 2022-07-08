@@ -14,6 +14,7 @@ void main(string[] args)
 	int min_intensity;
 	real mass_iso;
 	real full_scan_time;
+	bool filter_c13_isotopologs;
     auto helpInformation = getopt(
                 args,
                 "input|i", "The input file in .mgl or .mzxml format",
@@ -23,7 +24,8 @@ void main(string[] args)
 				"min_intensity|m", "The minimum intensity for fragmentation",
 				&min_intensity,
 				"mass_iso_window|w", "The mass isolation width", &mass_iso,
-				"full_scan_time|f", "The time in seconds for a full scan", &full_scan_time);
+				"full_scan_time|s", "The time in seconds for a full scan", &full_scan_time);
+		 		//"filter_c13_isotopologs|f", "'true' to filter C13 isotopologs", &filter_c13_isotopologs);
     if(helpInformation.helpWanted)
     {
         defaultGetoptFormatter(
@@ -59,6 +61,7 @@ void main(string[] args)
 			min_intensity,
 			mass_iso,
 			full_scan_time);
+			//filter_c13_isotopologs);
 	writeln("RT\tM/Z");
 	foreach(rt, mz; selected_precursors)
 	{
