@@ -89,29 +89,29 @@ unittest
 		"QkELXhZBE4gXdQuzjCUTKe4VDAhZoRxKMVUMS9gVE0dn6QysnFUTcG4ND" ~
 		"Ry59Rwo27ENzK95H0YRqQ3Qsd0YINMA=";
 	real[real] function_test = decode_mzxml_string(line);
-	assert(approxEqual(function_test.keys.sort, answer.keys.sort));
-	assert(approxEqual(function_test.values.sort, answer.values.sort));
+	assert(isClose(function_test.keys.sort, answer.keys.sort));
+	assert(isClose(function_test.values.sort, answer.values.sort));
 	line = "eJwBaACX/0JN3w5EtpZXQpenrkTQ9vFCl7wPRMiqD0LIOpREts/4QssT20" ~
 		"S6UJBC14WQROIF3ULs4wlEynuFQwIWaEcSjFVDEvYFRNHZ+kMrJxVE3Bu" ~
 		"DQ0cufUcKNuxDcyveR9GEakN0LHdGCDTAJ+wubA==";
 	function_test = decode_mzxml_string(line, "zlib");
-	assert(approxEqual(function_test.keys.sort, answer.keys.sort));
-	assert(approxEqual(function_test.values.sort, answer.values.sort));
+	assert(isClose(function_test.keys.sort, answer.keys.sort));
+	assert(isClose(function_test.values.sort, answer.values.sort));
 	line = "QEm74cAAAABAltLK4AAAAEBS9PXAAAAAQJoe3iAAAABAUveB4AAAAECZFU" ~
 		"HgAAAAQFkHUoAAAABAltn/AAAAAEBZYntgAAAAQJdKEgAAAABAWvCyAAA" ~
 		"AAECcQLugAAAAQF2cYSAAAABAmU9woAAAAEBgQs0AAAAAQOJRiqAAAABA" ~
 		"Yl7AoAAAAECaOz9AAAAAQGVk4qAAAABAm4NwYAAAAEBo5c+gAAAAQOFG3" ~
 		"YAAAABAbmV7wAAAAED6MI1AAAAAQG6FjuAAAABAwQaYAAAAAA==";
 	function_test = decode_mzxml_string(line, "none", 64);
-	assert(approxEqual(function_test.keys.sort, answer.keys.sort));
-	assert(approxEqual(function_test.values.sort, answer.values.sort));
+	assert(isClose(function_test.keys.sort, answer.keys.sort));
+	assert(isClose(function_test.values.sort, answer.values.sort));
 	line = "eJxz8Nz98AADA4PDtEunHoDooC9fwfxZcvcUwPzvjWDxmaKOYDqSPagBrP" ~
 		"7mfwYwP6k6AURP9xIC86M+bALTcxx2LwDRsXMSwebM9C8A8xOczoLlHwV" ~
 		"2gflJcQfA9CxrewcQnZryCMyf3VwANjfj6Xkw/6HbXbC9eanVYPf9MugF" ~
 		"q89r7QO76yDbDJC5AD9eO64=";
 	function_test = decode_mzxml_string(line, "zlib", 64);
-	assert(approxEqual(function_test.keys.sort, answer.keys.sort));
-	assert(approxEqual(function_test.values.sort, answer.values.sort));
+	assert(isClose(function_test.keys.sort, answer.keys.sort));
+	assert(isClose(function_test.values.sort, answer.values.sort));
 	assertThrown(decode_mzxml_string(line, "7z", 64));
 	assertThrown(decode_mzxml_string(line, "none", 5));
 }
@@ -242,8 +242,8 @@ unittest
 	assert(parsed[0].centroided == 1);
 	assert(parsed[0].level == 1);
 	assert(parsed[0].polarity == "-");
-	assert(approxEqual(parsed[0].retention_time, 0.457129));
-	assert(approxEqual(parsed[2].retention_time, 647.132));
+	assert(isClose(parsed[0].retention_time, 0.457129));
+	assert(isClose(parsed[2].retention_time, 647.132));
 	assert(parsed[0].collision_energy.isNaN);
 	assert(parsed[2].collision_energy == 35.0);
 	assert(parsed[0].parent_scan is null);
@@ -263,10 +263,10 @@ unittest
         243.171:    107273,
         244.174:    8717.19
 	];
-	assert(approxEqual(parsed[2].peaks.keys.sort, peaks.keys.sort));
-	assert(approxEqual(parsed[2].peaks.values.sort, 
+	assert(isClose(parsed[2].peaks.keys.sort, peaks.keys.sort));
+	assert(isClose(parsed[2].peaks.values.sort, 
 				peaks.values.sort)); assert(parsed[2].level == 2);
-	assert(approxEqual(parsed[2].get_peak_intensity(
+	assert(isClose(parsed[2].get_peak_intensity(
 					parsed[2].peaks.keys.sort[8]
 					), 
 				1678.81));

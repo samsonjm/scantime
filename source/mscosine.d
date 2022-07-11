@@ -271,9 +271,9 @@ unittest
 {
 	real[real] scan1 = [1: 2000, 2:3000, 3:1000];
 	real[real] scan2 = [1: 2000, 2:3000, 3:1000];
-	assert(approxEqual(find_cosine_score(scan1, scan2), 1));
+	assert(isClose(find_cosine_score(scan1, scan2), 1));
 	scan2 = [1: -2000, 2:-3000, 3:-1000];
-	assert(approxEqual(find_cosine_score(scan1, scan2), -1));
+	assert(isClose(find_cosine_score(scan1, scan2), -1));
 	scan2 = [1: 0];
 	assertThrown(find_cosine_score(scan1, scan2));
 	assertThrown(find_cosine_score(scan2, scan1));
