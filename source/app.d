@@ -24,8 +24,8 @@ void main(string[] args)
 				"min_intensity|m", "The minimum intensity for fragmentation",
 				&min_intensity,
 				"mass_iso_window|w", "The mass isolation width", &mass_iso,
-				"full_scan_time|s", "The time in seconds for a full scan", &full_scan_time);
-		 		//"filter_c13_isotopologs|f", "'true' to filter C13 isotopologs", &filter_c13_isotopologs);
+				"full_scan_time|s", "The time in seconds for a full scan", &full_scan_time,
+		 		"filter_c13_isotopologs|f", "'true' to filter C13 isotopologs", &filter_c13_isotopologs);
     if(helpInformation.helpWanted)
     {
         defaultGetoptFormatter(
@@ -60,8 +60,8 @@ void main(string[] args)
 			dew,
 			min_intensity,
 			mass_iso,
-			full_scan_time);
-			//filter_c13_isotopologs);
+			full_scan_time,
+			filter_c13_isotopologs);
 	writeln("RT\tM/Z");
 	foreach(rt, mz; selected_precursors)
 	{
