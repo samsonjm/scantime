@@ -14,7 +14,8 @@ void main(string[] args)
 	int min_intensity;
 	real mass_iso;
 	real full_scan_time;
-	bool filter_c13_isotopologs;
+	bool filter_c13_isotopologues;
+	int max_c13_in_isotopologues;
     auto helpInformation = getopt(
                 args,
                 "input|i", "The input file in .mgl or .mzxml format",
@@ -25,7 +26,8 @@ void main(string[] args)
 				&min_intensity,
 				"mass_iso_window|w", "The mass isolation width", &mass_iso,
 				"full_scan_time|s", "The time in seconds for a full scan", &full_scan_time,
-		 		"filter_c13_isotopologs|f", "'true' to filter C13 isotopologs", &filter_c13_isotopologs);
+		 		"filter_c13_isotopologues|f", "'true' to filter C13 isotopologs", &filter_c13_isotopologues,
+				"max_c13_in_isotopologues|i", "Maximum number of C13 isotopologues in a peak to filter (default=4)");
     if(helpInformation.helpWanted)
     {
         defaultGetoptFormatter(
