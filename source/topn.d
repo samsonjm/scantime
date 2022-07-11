@@ -180,14 +180,12 @@ real[real] select_precursor_ions_topn(
 				for(int i=0; i<selected_rts.length; ++i)
 				{
 					if(
-					   // Check 1: DEW
 					   (selected_rts[i] < (rt - dew) || // dew expired - keep
 					   selected[selected_rts[i]] > (mz + mass_isolation_window) || // mz > selected mz - keep
 					   selected[selected_rts[i]] < (mz - mass_isolation_window)) // mz < selected mz - keep
 					   && 
-					   // Check 2: Isotopologues
-					   (!filter_c13_isotopologues || // If not selected, skip to Check 2
-					   !is_c13_isotopologue(mz, //  Not likely to remove 2xC13 isotopologues
+					   (!filter_c13_isotopologues ||
+					   !is_c13_isotopologue(mz,
 						   	 				selected[selected_rts[i]], 
 											mass_isolation_window,
 						  				    4,
