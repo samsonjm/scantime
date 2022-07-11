@@ -27,7 +27,7 @@ void main(string[] args)
 				"mass_iso_window|w", "The mass isolation width", &mass_iso,
 				"full_scan_time|s", "The time in seconds for a full scan", &full_scan_time,
 		 		"filter_c13_isotopologues|f", "'true' to filter C13 isotopologs", &filter_c13_isotopologues,
-				"max_c13_in_isotopologues|i", "Maximum number of C13 isotopologues in a peak to filter (default=4)");
+				"max_c13_in_isotopologues|c", "Maximum number of C13 isotopologues in a peak to filter (default=4)", &max_c13_in_isotopologues);
     if(helpInformation.helpWanted)
     {
         defaultGetoptFormatter(
@@ -63,7 +63,7 @@ void main(string[] args)
 			min_intensity,
 			mass_iso,
 			full_scan_time,
-			filter_c13_isotopologs);
+			filter_c13_isotopologues);
 	writeln("RT\tM/Z");
 	foreach(rt, mz; selected_precursors)
 	{
