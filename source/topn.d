@@ -125,7 +125,8 @@ real[real] select_precursor_ions_topn(
 	real full_scan_time,
 	bool filter_c13_isotopologues,
 	int max_c13_in_isotopologues = 4,
-	int max_charge = 4)
+	int max_charge = 4,
+	real lag_time = 0)
 {
 /* Outputs list of [RT:mass] of precursors chosen for fragmentation
  * Arguments:
@@ -138,6 +139,7 @@ real[real] select_precursor_ions_topn(
  *	filter_c13_isotopologues - whether to filter C13 isotopologues
  *  max_c13_in_isotopologues - the maximum number of C13's in isotopologue peaks
  *	max_charge - the maximum expected charge of ions
+ *	lag_time - the time between detecting a M/Z and its first selection
  * Returns:
  *  selected - [RT:mass] of precursor ions chosen
  */
@@ -147,6 +149,7 @@ real[real] select_precursor_ions_topn(
 	real rt_offset = full_scan_time / (n + 1); // for fragmnetation time
 	real previous_rt = 0;
 	real mass_diff_c13 = 1.00335484;
+	real[real] lag_list; //MZ:RT_init for initial scan > minimum_intensity
 	for(int scan_number = 0; scan_number<scans.length; ++scan_number) // Iterate over all scans
 	{
 		real rt = scans[scan_number].retention_time;
@@ -157,8 +160,38 @@ real[real] select_precursor_ions_topn(
 		peaks = scans[scan_number].peaks;
 		foreach(mz; peaks.keys.sort) // Iterate over all peaks in current scan
 		{
+			bool on_lag = false;
+			real mass_isolation_window = (mass_isolation_ppm * mz) / 1e6;
 			real new_intensity = peaks[mz];
+			real lag_key;
+			foreach(lag_mz; lag_list.keys)
+			{
+				
+				if(mz + mass_isolation_window > lag_mz &&
+				   mz - mass_isolation_window < lag_mz)
+				{
+					on_lag = true;
+					lag_key = lag_mz;
+					break;
+				}
+			}
+			if(!on_lag)
+			{
+				lag_list[mz] = rt;
+				on_lag = true;
+				lag_key = mz;
+			}
 			if(new_intensity < minimum_intensity)
+			{
+				if(on_lag)
+				{
+					lag_list.remove(lag_key);
+				}
+				continue;
+			}
+			if(lag_time != 0 &&
+			   on_lag &&
+			   lag_list[lag_key] + lag_time >= rt)
 			{
 				continue;
 			}
@@ -180,7 +213,6 @@ real[real] select_precursor_ions_topn(
 				int[] outside_selected_window;
 				for(int i=0; i<selected_rts.length; ++i)
 				{
-					real mass_isolation_window = (mass_isolation_ppm * mz) / 1e6;
 					if(
 					   (selected_rts[i] < (rt - dew) || // dew expired - keep
 					   selected[selected_rts[i]] > (mz + mass_isolation_window) || // mz > selected mz - keep
@@ -226,7 +258,6 @@ real[real] select_precursor_ions_topn(
 }
 unittest
 {
-	import std.stdio;
 	MSXScan first = new MSXScan;
 	first.level=1;
 	first.retention_time = 1;
@@ -349,7 +380,6 @@ unittest
 	assert(num_per_scan == n); // tests n
 	bool same_within_dew = false;
 	bool rt_9_mz_110 = false;
-	stderr.writeln(my_precursors);	
 	foreach(rt, mz; my_precursors)
 	{
 		if(mz == 110.0 &&
@@ -361,7 +391,6 @@ unittest
 		if(mz == 110.0 &&
 		   rt >= 9)
 		{
-			stderr.writeln("setting true");
 			rt_9_mz_110 = true;
 		}
 	}
@@ -404,7 +433,7 @@ unittest
 		85.0: 1007.0,
 		90.0: 1008.0,
 		95.0: 1009.0,
-		100.0: 1010.0,
+		100.0: 1000000.0,
 		105.0: 1011.0,
 		110.0: 1012.0,
 	];
@@ -424,4 +453,25 @@ unittest
 		assert(mz != 50.99335485); // Check filter mass_isolation_window
 		assert(mz != 51.01335483); // Check filter mass_isolation_window
 	}
+	my_precursors = select_precursor_ions_topn(all_scans,
+								  n,
+								  0,
+								  min_intensity,
+								  mass_isolation_window,
+								  full_scan_time,
+								  false,
+								  4,
+								  4,
+								  3.1);
+	bool mz_100_removed_again = true;
+	foreach(rt; my_precursors.keys)
+	{
+		assert(rt > 4); // MZ's lag at beginning
+		if(rt >= 20 && my_precursors[rt] == 100.0)
+		{
+			mz_100_removed_again = false;
+		}
+	}
+	assert(my_precursors.keys.length > 0); // MZ's removed from lag list
+	assert(mz_100_removed_again); // MZ's readd to lag list
 }

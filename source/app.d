@@ -17,6 +17,7 @@ void main(string[] args)
 	bool filter_c13_isotopologues;
 	int max_c13_in_isotopologues;
 	int max_charge;
+	real lag_time;
     auto helpInformation = getopt(
                 args,
                 "input", "The input file in .mgf or .mzxml format",
@@ -29,7 +30,8 @@ void main(string[] args)
 				"total_scan_time|s", "The time between full scans in seconds", &total_scan_time,
 		 		"filter_c13_isotopologues|f", "'true' to filter C13 isotopologs", &filter_c13_isotopologues,
 				"max_c13_in_isotopologues|i", "Maximum number of C13 isotopologues in a peak to filter (default=4)", &max_c13_in_isotopologues,
-				"max_charge_|c", "The maximum expected charge of the ions", &max_charge);
+				"max_charge|c", "The maximum expected charge of the ions", &max_charge,)
+				"lag_time|l", "The time between detecting a M/Z and its first fragmentation", &lag_time;
     if(helpInformation.helpWanted)
     {
         defaultGetoptFormatter(
@@ -67,7 +69,8 @@ void main(string[] args)
 			total_scan_time,
 			filter_c13_isotopologues,
 			max_c13_in_isotopologues,
-			max_charge);
+			max_charge,
+			lag_time);
 	writeln("RT\tM/Z");
 	foreach(rt, mz; selected_precursors)
 	{
