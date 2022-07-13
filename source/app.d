@@ -13,21 +13,23 @@ void main(string[] args)
 	real dew;
 	int min_intensity;
 	real mass_iso;
-	real full_scan_time;
+	real total_scan_time;
 	bool filter_c13_isotopologues;
 	int max_c13_in_isotopologues;
+	int max_charge;
     auto helpInformation = getopt(
                 args,
-                "input|i", "The input file in .mgl or .mzxml format",
+                "input", "The input file in .mgf or .mzxml format",
                 &input_file,
                 "N value|n", "The N of TopN", &n,
                 "DEW|d", "The DEW, in seconds", &dew,
 				"min_intensity|m", "The minimum intensity for fragmentation",
 				&min_intensity,
-				"mass_iso_window|w", "The mass isolation width", &mass_iso,
-				"full_scan_time|s", "The time in seconds for a full scan", &full_scan_time,
+				"mass_iso_window|w", "The mass isolation width in ppm", &mass_iso,
+				"total_scan_time|s", "The time between full scans in seconds", &total_scan_time,
 		 		"filter_c13_isotopologues|f", "'true' to filter C13 isotopologs", &filter_c13_isotopologues,
-				"max_c13_in_isotopologues|c", "Maximum number of C13 isotopologues in a peak to filter (default=4)", &max_c13_in_isotopologues);
+				"max_c13_in_isotopologues|i", "Maximum number of C13 isotopologues in a peak to filter (default=4)", &max_c13_in_isotopologues,
+				"max_charge_|c", "The maximum expected charge of the ions", &max_charge);
     if(helpInformation.helpWanted)
     {
         defaultGetoptFormatter(
@@ -46,7 +48,7 @@ void main(string[] args)
         {
             throw new Exception("Invalid input file extension.");
         }
-        case "mgl":
+        case "mgf":
         {
            my_scans = mgf_parser(file_contents);
             break;
@@ -62,8 +64,10 @@ void main(string[] args)
 			dew,
 			min_intensity,
 			mass_iso,
-			full_scan_time,
-			filter_c13_isotopologues);
+			total_scan_time,
+			filter_c13_isotopologues,
+			max_c13_in_isotopologues,
+			max_charge);
 	writeln("RT\tM/Z");
 	foreach(rt, mz; selected_precursors)
 	{

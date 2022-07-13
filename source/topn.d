@@ -121,10 +121,11 @@ real[real] select_precursor_ions_topn(
 	int n,
 	real dew,
 	real minimum_intensity,
-	real mass_isolation_window,
+	real mass_isolation_ppm,
 	real full_scan_time,
 	bool filter_c13_isotopologues,
-	int max_c13_in_isotopologues = 4)
+	int max_c13_in_isotopologues = 4,
+	int max_charge = 4)
 {
 /* Outputs list of [RT:mass] of precursors chosen for fragmentation
  * Arguments:
@@ -132,13 +133,13 @@ real[real] select_precursor_ions_topn(
  *  n - number of fragmentations per full scan
  *  dew - time between fragmentation selection of a single precursor ion
  *	minimum_intensity - minimum intensity to consider for fragmentaiton
- *  mass_isolation_window - m/z +/- to be considered the same peak
+ *  mass_isolation_ppm - m/z +/- ppm to be considered the same peak
  *  full_scan_time - time between full scans when fragmenting
  *	filter_c13_isotopologues - whether to filter C13 isotopologues
  *  max_c13_in_isotopologues - the maximum number of C13's in isotopologue peaks
+ *	max_charge - the maximum expected charge of ions
  * Returns:
  *  selected - [RT:mass] of precursor ions chosen
- * 
  */
 	real[real] selected; // RT:M/Z  (FINAL list)
 	real[real] peaks; // M/Z:intensity (all from current scan)
@@ -179,6 +180,7 @@ real[real] select_precursor_ions_topn(
 				int[] outside_selected_window;
 				for(int i=0; i<selected_rts.length; ++i)
 				{
+					real mass_isolation_window = (mass_isolation_ppm * mz) / 1e6;
 					if(
 					   (selected_rts[i] < (rt - dew) || // dew expired - keep
 					   selected[selected_rts[i]] > (mz + mass_isolation_window) || // mz > selected mz - keep
@@ -188,7 +190,7 @@ real[real] select_precursor_ions_topn(
 					   !is_c13_isotopologue(mz,
 						   	 				selected[selected_rts[i]], 
 											mass_isolation_window,
-						  				    4,
+						  				    max_charge,
 											max_c13_in_isotopologues))
 					   )
 					{
