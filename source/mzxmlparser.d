@@ -190,10 +190,15 @@ MSXScan[] parse_mzxml(string contents)
 				{
 					int parent_scan;
 					attr.getAttrs(
-							"precursorScanNum", 
+							"precursorScanNum",
 							&parent_scan);
 					current_scan.parent_scan = 
 						scans[parent_scan-1];
+					real parent_peak;
+					range.popFront();
+					string parent_mz = range.front.text;
+					current_scan.parent_peak =
+						to!real(parent_mz);
 					break;
 				}
 				case "peaks":
@@ -273,4 +278,7 @@ unittest
 				1678.81,
 				0.0001));
 	assert(parsed[2].scan_number == 3);
+	import std.stdio;
+	writeln(parsed[2].parent_peak);
+	assert(isClose(parsed[2].parent_peak, 243.170868338055));
 }
