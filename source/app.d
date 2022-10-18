@@ -1,7 +1,7 @@
 import std.stdio;
 import scans;
 import mscosine;
-import topn;
+import calculatescantimes;
 import mzxmlparser;
 import std.getopt;
 import std.regex;
@@ -9,30 +9,15 @@ import std.regex;
 void main(string[] args)
 {
 	string input_file;
-	int n;
-	real dew;
-	int min_intensity;
-	real mass_iso;
-	real full_scan_time;
-	bool filter_c13_isotopologues;
-	int max_c13_in_isotopologues;
     auto helpInformation = getopt(
                 args,
-                "input|i", "The input file in .mgl or .mzxml format",
-                &input_file,
-                "N value|n", "The N of TopN", &n,
-                "DEW|d", "The DEW, in seconds", &dew,
-				"min_intensity|m", "The minimum intensity for fragmentation",
-				&min_intensity,
-				"mass_iso_window|w", "The mass isolation width", &mass_iso,
-				"full_scan_time|s", "The time in seconds for a full scan", &full_scan_time,
-		 		"filter_c13_isotopologues|f", "'true' to filter C13 isotopologs", &filter_c13_isotopologues,
-				"max_c13_in_isotopologues|c", "Maximum number of C13 isotopologues in a peak to filter (default=4)", &max_c13_in_isotopologues);
+                "input|i", "The input file in .mgl or .mzxml format, must be MS/MS of N>=2",
+                &input_file);
     if(helpInformation.helpWanted)
     {
         defaultGetoptFormatter(
                     stdout.lockingTextWriter(),
-                    "Runs in silico TopN precursor ion selection",
+                    "Outputs time for full and fragmentation scans",
                     helpInformation.options,
                     "  %*s\t%*s%*s%s\n");
         return;
@@ -57,16 +42,10 @@ void main(string[] args)
             break;
         }
     }
-	real[real] selected_precursors = select_precursor_ions_topn(my_scans,
-			n,
-			dew,
-			min_intensity,
-			mass_iso,
-			full_scan_time,
-			filter_c13_isotopologues);
-	writeln("RT\tM/Z");
-	foreach(rt, mz; selected_precursors)
-	{
-		writefln("%s\t%s", rt, mz);
-	}
+	real[] scan_times = calculate_scan_times(my_scans);
+	real full_scan_time = scan_times[0];
+	real fragmentation_scan_time = scan_times[1];
+	writeln("Times:");
+	writeln("Full Scan: ", full_scan_time);
+	writeln("Fragmentation Scan: ", fragmentation_scan_time);
 }

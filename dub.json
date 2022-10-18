@@ -4,9 +4,10 @@
 	],
 	"copyright": "Copyright © 2022, Jonathan Samson",
 	"dependencies": {
+		"dstats": "~>1.0.6",
 		"dxml": "~>0.4.3"
 	},
-	"description": "A tool for in silico TopN precursor ion selection simulation.",
+	"description": "A tool for determining the full and fragmentation scan times for LCMS/MS.",
 	"license": "GPL3",
-	"name": "topn"
+	"name": "scantime"
 }
