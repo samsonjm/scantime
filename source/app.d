@@ -5,6 +5,7 @@ import topn;
 import mzxmlparser;
 import std.getopt;
 import std.regex;
+import std.typecons;
 
 void main(string[] args)
 {
@@ -20,18 +21,18 @@ void main(string[] args)
 	real lag_time;
     auto helpInformation = getopt(
                 args,
-                "input", "The input file in .mgf or .mzxml format",
+                "input", "The input file in .mgf or .mzxml format - full scan only",
                 &input_file,
                 "N value|n", "The N of TopN", &n,
                 "DEW|d", "The DEW, in seconds", &dew,
 				"min_intensity|m", "The minimum intensity for fragmentation",
 				&min_intensity,
-				"mass_iso_window|w", "The mass isolation width in ppm", &mass_iso,
 				"total_scan_time|s", "The time between full scans in seconds", &total_scan_time,
-		 		"filter_c13_isotopologues|f", "'true' to filter C13 isotopologs", &filter_c13_isotopologues,
+		 		"filter_c13_isotopologues|f", "'true' to filter C13 isotopologues", &filter_c13_isotopologues,
+				"mass_iso_window|w", "The mass isolation width in ppm - only used by isotopologue filter", &mass_iso,
 				"max_c13_in_isotopologues|i", "Maximum number of C13 isotopologues in a peak to filter (default=4)", &max_c13_in_isotopologues,
-				"max_charge|c", "The maximum expected charge of the ions", &max_charge,)
-				"lag_time|l", "The time between detecting a M/Z and its first fragmentation", &lag_time;
+				"max_charge|c", "The maximum expected charge of the ions", &max_charge,
+				"lag_time|l", "The time between detecting a M/Z and its first fragmentation", &lag_time);
     if(helpInformation.helpWanted)
     {
         defaultGetoptFormatter(
@@ -61,7 +62,7 @@ void main(string[] args)
             break;
         }
     }
-	real[real] selected_precursors = select_precursor_ions_topn(my_scans,
+	Tuple!(real, real)[real] selected_precursors = select_precursor_ions_topn(my_scans,
 			n,
 			dew,
 			min_intensity,
@@ -71,9 +72,11 @@ void main(string[] args)
 			max_c13_in_isotopologues,
 			max_charge,
 			lag_time);
-	writeln("RT\tM/Z");
-	foreach(rt, mz; selected_precursors)
+	writeln("RT\tM/Z\tIntensity");
+	foreach(rt, tup; selected_precursors)
 	{
-		writefln("%s\t%s", rt, mz);
+		real mz = tup[0];
+		real intensity = tup[1];
+		writefln("%s\t%s\t%s", rt, mz, intensity);
 	}
 }

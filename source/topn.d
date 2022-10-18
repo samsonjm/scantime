@@ -8,6 +8,7 @@ import mzxmlparser;
 import scans;
 import std.algorithm.searching;
 import std.algorithm;
+import std.typecons;
 
 bool is_c13_isotopologue(
 		real current_mz,
@@ -116,7 +117,7 @@ unittest
 							   1));
 }
 
-real[real] select_precursor_ions_topn(
+Tuple!(real, real)[real] select_precursor_ions_topn(
 	MSXScan[] scans,
 	int n,
 	real dew,
@@ -141,9 +142,10 @@ real[real] select_precursor_ions_topn(
  *	max_charge - the maximum expected charge of ions
  *	lag_time - the time between detecting a M/Z and its first selection
  * Returns:
- *  selected - [RT:mass] of precursor ions chosen
+ *  selected - [RT:(mass, intensity)] of precursor ions chosen
  */
-	real[real] selected; // RT:M/Z  (FINAL list)
+	Tuple!(real, real)[real] selected; // RT, M/Z, Intensity (FINAL list)
+//	real[real] selected; // RT:M/Z  (FINAL list)
 	real[real] peaks; // M/Z:intensity (all from current scan)
 	real[real] top_peaks; // intensity:M/Z (current scan to add to final)
 	real rt_offset = full_scan_time / (n + 1); // for fragmnetation time
@@ -215,12 +217,12 @@ real[real] select_precursor_ions_topn(
 				{
 					if(
 					   (selected_rts[i] < (rt - dew) || // dew expired - keep
-					   selected[selected_rts[i]] > (mz + mass_isolation_window) || // mz > selected mz - keep
-					   selected[selected_rts[i]] < (mz - mass_isolation_window)) // mz < selected mz - keep
+					   selected[selected_rts[i]][0] > (mz + mass_isolation_window) || // mz > selected mz - keep
+					   selected[selected_rts[i]][0] < (mz - mass_isolation_window)) // mz < selected mz - keep
 					   && 
 					   (!filter_c13_isotopologues ||
 					   !is_c13_isotopologue(mz,
-						   	 				selected[selected_rts[i]], 
+						   	 				selected[selected_rts[i]][0], 
 											mass_isolation_window,
 						  				    max_charge,
 											max_c13_in_isotopologues))
@@ -249,7 +251,7 @@ real[real] select_precursor_ions_topn(
 		for(int i=0; i<top_peaks.length; ++i)
 		{
 			real adjusted_rt = rt + (rt_offset * (i + 1));
-			selected[adjusted_rt] = top_peaks[sorted_intensities[i]];
+			selected[adjusted_rt] = tuple(top_peaks[sorted_intensities[i]], sorted_intensities[i]);
 		}
 		top_peaks.clear();
 		previous_rt = rt;
@@ -361,7 +363,7 @@ unittest
 	real min_intensity = 1000000.0;
 	real mass_isolation_window = 0.01;
 	int full_scan_time = 1;
-	real[real] my_precursors = select_precursor_ions_topn(all_scans,
+	Tuple!(real, real)[real] my_precursors = select_precursor_ions_topn(all_scans,
 								  n,
 								  dew,
 								  min_intensity,
@@ -380,8 +382,9 @@ unittest
 	assert(num_per_scan == n); // tests n
 	bool same_within_dew = false;
 	bool rt_9_mz_110 = false;
-	foreach(rt, mz; my_precursors)
+	foreach(rt, tup; my_precursors)
 	{
+		real mz = tup[0];
 		if(mz == 110.0 &&
 		   rt > 2 &&
 		   rt < 5)
@@ -400,15 +403,15 @@ unittest
 	{
 		assert(rt < 10); 
 	}
-	assert(my_precursors[1.2] == 110.0);
-	assert(my_precursors[1.4] == 105.0);
-	assert(my_precursors[1.6] == 100.0);
-	assert(my_precursors[1.8] == 95.0);
-	assert(my_precursors[4.2] < 1000008.5);
-	assert(my_precursors[4.4] < 1000008.5);
-	assert(my_precursors[4.6] < 1000008.5);
-	assert(my_precursors[4.8] < 1000008.5);
-	real[real] my_other_precursors = select_precursor_ions_topn(all_scans,
+	assert(my_precursors[1.2][0] == 110.0);
+	assert(my_precursors[1.4][0] == 105.0);
+	assert(my_precursors[1.6][0] == 100.0);
+	assert(my_precursors[1.8][0] == 95.0);
+	assert(my_precursors[4.2][0] < 1000008.5);
+	assert(my_precursors[4.4][0] < 1000008.5);
+	assert(my_precursors[4.6][0] < 1000008.5);
+	assert(my_precursors[4.8][0] < 1000008.5);
+	Tuple!(real, real)[real] my_other_precursors = select_precursor_ions_topn(all_scans,
 										n,
 										dew,
 										min_intensity,
@@ -447,8 +450,9 @@ unittest
 								  full_scan_time,
 								  true);
 
-	foreach(rt, mz; my_precursors)
+	foreach(rt, tup; my_precursors)
 	{
+		real mz = tup[0];
 		assert(mz != 51.00335484); // Check filter
 		assert(mz != 50.99335485); // Check filter mass_isolation_window
 		assert(mz != 51.01335483); // Check filter mass_isolation_window
@@ -467,7 +471,7 @@ unittest
 	foreach(rt; my_precursors.keys)
 	{
 		assert(rt > 4); // MZ's lag at beginning
-		if(rt >= 20 && my_precursors[rt] == 100.0)
+		if(rt >= 20 && my_precursors[rt][0] == 100.0)
 		{
 			mz_100_removed_again = false;
 		}
