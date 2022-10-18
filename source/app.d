@@ -5,6 +5,7 @@ import calculatescantimes;
 import mzxmlparser;
 import std.getopt;
 import std.regex;
+import std.typecons;
 
 void main(string[] args)
 {
@@ -31,7 +32,7 @@ void main(string[] args)
         {
             throw new Exception("Invalid input file extension.");
         }
-        case "mgl":
+        case "mgf":
         {
            my_scans = mgf_parser(file_contents);
             break;
