@@ -4,8 +4,10 @@
 	],
 	"copyright": "Copyright © 2022, Jonathan Samson",
 	"dependencies": {
+		"cairod": ">=0.0.1-alpha.3+1.10.2 <0.1.0-0",
 		"dstats": "~>1.0.6",
-		"dxml": "~>0.4.3"
+		"dxml": "~>0.4.3",
+		"ggplotd": "~>1.2.3"
 	},
 	"description": "A tool for determining the full and fragmentation scan times for LCMS/MS.",
 	"license": "GPL3",
