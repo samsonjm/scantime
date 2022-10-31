@@ -6,11 +6,13 @@
 module calculatescantimes;
 import mzxmlparser;
 import scans;
+import mscosine;
 import std.algorithm.iteration : uniq;
 import std.algorithm.mutation : copy;
 import dstats;
 import std.stdio;
-import std.array : array;
+import std.regex;
+import std.array : array, split;
 import std.algorithm : map;
 import std.range : zip, chain, repeat;
 
@@ -20,6 +22,55 @@ import ggplotd.geom : geomBox;
 import ggplotd.ggplotd : GGPlotD, putIn, Margins, title;
 
 real[] calculate_scan_times(
+		string input_files,
+		string summary_file_name
+		)
+{
+/* Outputs list of [0] full and [1] fragmentation scan times averaged over files
+ *  Arguments:
+ *   input_files - comma-separated input files
+ *   summary_file_name - location to save summary file
+ * Returns:
+ *  scan_times - a list of [0] full and [1]  fragmentation scan times
+ */
+	string[] separate_files = input_files.split(",");
+	real[] full_scan_times;
+	real[] fragmentation_scan_times;
+	auto file_extension = ctRegex!(`\.(\w*)$`);
+	MSXScan[] my_scans;
+	foreach(file; separate_files)
+	{
+		string file_contents = read_file(file);
+		switch (file.matchFirst(file_extension)[1])
+		{
+			default:
+			{
+				throw new Exception("Invalid input file  extension.");
+			}
+			case "mgf":
+			{
+				my_scans = mgf_parser(file_contents);
+				break;
+			}
+			case "mzXML":
+			{
+				my_scans = parse_mzxml(file_contents);
+				break;
+			}
+		}
+		real[] scan_times = calculate_separate_scan_times(my_scans, summary_file_name);
+		full_scan_times ~= scan_times[0];
+		fragmentation_scan_times ~= scan_times[1];
+	}
+	real full_scan_time = mean(full_scan_times);
+	real fragmentation_scan_time = mean(fragmentation_scan_times);
+	return [full_scan_time, fragmentation_scan_time];
+}
+unittest
+{
+}
+
+real[] calculate_separate_scan_times(
 		MSXScan[] scans,
 		string summary_file_name)
 {
@@ -34,6 +85,9 @@ real[] calculate_scan_times(
 	int level;
 	real[] full_scan_times;
 	real[] frag_scan_times;
+	real[] double_frag_scan_times;
+	real[] triple_frag_scan_times;
+	real[] quadruple_frag_scan_times;
 	real[] last_frag_scan_times;
 	for(int scan_number = 0; scan_number < scans.length; ++scan_number)
 	{
@@ -90,7 +144,6 @@ real[] calculate_scan_times(
 	real last_frag = sum(last_frag_scan_times) / last_frag_scan_times.length;
 	full_scan += last_frag;
 	full_scan -= frag_scan;
-
 	return [full_scan, frag_scan];
 }
 unittest
@@ -152,5 +205,5 @@ unittest
 	MSXScan[] all_scans = [first, second, third, fourth, fifth, sixth,
 						   seventh, eighth, ninth, tenth, eleventh, twelvth,
 						   thirteenth, fourteenth, fifteenth, sixteenth, seventeenth, eighteenth];
-	assert(calculate_scan_times(all_scans, "/home/samsonjm/Projects/ScanTime/summary.txt") == [1, 0.5]);
+	assert(calculate_separate_scan_times(all_scans, "/home/samsonjm/Projects/ScanTime/summary.txt") == [1, 0.5]);
 }
