@@ -23,13 +23,13 @@ import ggplotd.ggplotd : GGPlotD, putIn, Margins, title;
 
 real[] calculate_scan_times(
 		string input_files,
-		string summary_file_name
+		string summary_folder
 		)
 {
 /* Outputs list of [0] full and [1] fragmentation scan times averaged over files
  *  Arguments:
  *   input_files - comma-separated input files
- *   summary_file_name - location to save summary file
+ *   summary_folder - location to save summary file
  * Returns:
  *  scan_times - a list of [0] full and [1]  fragmentation scan times
  */
@@ -58,7 +58,7 @@ real[] calculate_scan_times(
 				break;
 			}
 		}
-		real[] scan_times = calculate_separate_scan_times(my_scans, summary_file_name);
+		real[] scan_times = calculate_separate_scan_times(my_scans, summary_folder);
 		full_scan_times ~= scan_times[0];
 		fragmentation_scan_times ~= scan_times[1];
 	}
@@ -72,15 +72,16 @@ unittest
 
 real[] calculate_separate_scan_times(
 		MSXScan[] scans,
-		string summary_file_name)
+		string summary_folder)
 {
 /* Outputs list of [0] full and [1] fragmentation scan times
  * Arguments:
  *  scans - a MSXScan[] of only MS1 scans of the same polarity
+ *  summary_folder - the location and name to save the summary file
  * Returns:
  *  scan_times - a list of [0] full and [1] fragmentation scan times
  */
-	File summary_file = File(summary_file_name, "w");
+	File summary_file = File(summary_folder ~ "/summary.txt", "w");
 	real rt;
 	int level;
 	real[] full_scan_times;
@@ -138,7 +139,7 @@ real[] calculate_separate_scan_times(
 							 .putIn(GGPlotD());
 	gg.put(yaxisLabel("Time (s)"));
 	gg.put(title("Scan Times - Unique values"));
-	gg.save("/home/samsonjm/Projects/ScanTime/boxplot.svg");
+	gg.save(summary_folder ~ "/boxplot.svg");
 	real frag_scan = sum(frag_scan_times) / frag_scan_times.length;
 	real full_scan = (sum(full_scan_times) / full_scan_times.length);
 	real last_frag = sum(last_frag_scan_times) / last_frag_scan_times.length;
